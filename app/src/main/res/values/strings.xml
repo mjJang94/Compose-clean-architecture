@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Compose-clean-architecture</string>
+
+    <string name="query_label">검색어</string>
 </resources>

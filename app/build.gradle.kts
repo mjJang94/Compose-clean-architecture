@@ -73,9 +73,13 @@ dependencies {
     implementation(libs.androidx.compose.uiUtil)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.navigation)
+    implementation(libs.androidx.compose.lifecycle.viewmodel)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+
+    implementation(libs.gson)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,4 +1,4 @@
-package com.mj.compose_clean_architecture
+package com.mj.compose_clean_architecture.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,33 +10,23 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.mj.compose_clean_architecture.ui.theme.ComposecleanarchitectureTheme
+import com.mj.compose_clean_architecture.ui.theme.ComposeCleanArchitectureTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ComposecleanarchitectureTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-                    Greeting("Android")
-                }
+            ComposeCleanArchitectureTheme {
+                MyApp()
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    ComposecleanarchitectureTheme {
-        Greeting("Android")
+    ComposeCleanArchitectureTheme {
+        MyApp()
     }
 }
