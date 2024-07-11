@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mj.compose_clean_architecture.R
+import com.mj.compose_clean_architecture.common.ktx.applyDateFormat
 import com.mj.compose_clean_architecture.ui.model.News
 import com.mj.compose_clean_architecture.ui.theme.ComposeCleanArchitectureTheme
 import com.mj.compose_clean_architecture.ui.theme.Typography
@@ -127,14 +128,14 @@ private fun HomeScreenPreview() {
                 title = "국내주식 형펀스서 사흘때 자금 순유출",
                 description = "국내 주식형 펀드에서 사흘째 자금이 빠져나갔다. 26일 금융투자협회에 따르면 지난 22일 상장지수펀드(ETF)를 제외한 국내 주식형 펀드에서 126억원이 순유출됐다. 472억원이 들어오고 598억원이 펀드...",
                 link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
-                date = "Mon, 26 Sep 2016 07:50:00 +0900"
+                date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat()
             ),
 
             News(
                 title = "테스트 뉴스 타이틀로 표현되어",
                 description = "국내 주식형 펀드에서 사흘째 자금이 빠져나갔다. 26일 금융투자협회에 따르면 지난 22일 상장지수펀드(ETF)를 제외한 국내 주식형 펀드에서 126억원이 순유출됐다. 472억원이 들어오고 598억원이 펀드...",
                 link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
-                date = "Mon, 26 Sep 2016 07:50:00 +0900"
+                date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat()
             )
         )
         HomeScreen(
@@ -157,7 +158,7 @@ private fun NewListRow() {
             title = "국내주식 형펀스서 사흘때 자금 순유출",
             description = "국내 주식형 펀드에서 사흘째 자금이 빠져나갔다. 26일 금융투자협회에 따르면 지난 22일 상장지수펀드(ETF)를 제외한 국내 주식형 펀드에서 126억원이 순유출됐다. 472억원이 들어오고 598억원이 펀드...",
             link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
-            date = "Mon, 26 Sep 2016 07:50:00 +0900"
+            date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat()
         )
         NewsRow(
             news = mock,
