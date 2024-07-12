@@ -5,17 +5,34 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -24,45 +41,110 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.mj.compose_clean_architecture.R
 import com.mj.compose_clean_architecture.common.ktx.applyDateFormat
-import com.mj.compose_clean_architecture.ui.model.News
+import com.mj.compose_clean_architecture.data.model.News
+import com.mj.compose_clean_architecture.ui.base.SIDE_EFFECTS_KEY
+import com.mj.compose_clean_architecture.ui.common.NetworkError
+import com.mj.compose_clean_architecture.ui.common.Progress
 import com.mj.compose_clean_architecture.ui.theme.ComposeCleanArchitectureTheme
 import com.mj.compose_clean_architecture.ui.theme.Typography
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    query: String,
-    news: List<News> = emptyList(),
-    onQueryChange: (String) -> Unit,
-    onItemClick: (News) -> Unit,
+    state: HomeContract.State,
+    effectFlow: Flow<HomeContract.Effect>?,
+    onEventSent: (event: HomeContract.Event) -> Unit,
+    onNavigationRequested: (effect: HomeContract.Effect.Navigation) -> Unit
 ) {
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val dataLoadedMsg = stringResource(R.string.home_screen_snackbar_loaded_message)
+    var query by remember { mutableStateOf("") }
+
+    LaunchedEffect(SIDE_EFFECTS_KEY) {
+        effectFlow?.onEach { effect ->
+            when (effect) {
+                is HomeContract.Effect.DataLoaded -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = dataLoadedMsg,
+                        duration = SnackbarDuration.Short,
+                    )
+                }
+
+                is HomeContract.Effect.Navigation.ToDetail -> onNavigationRequested(effect)
+            }
+        }?.collect()
+    }
+
     Column(modifier = modifier) {
-        SearchBox(query = query, onQueryChange = onQueryChange)
-        NewsList(news = news, onItemClick = onItemClick)
+        when {
+            state.isLoading -> Progress()
+            state.isError -> NetworkError { onEventSent(HomeContract.Event.Retry(query)) }
+            else -> {
+                SearchBox(
+                    query = query,
+                    onQueryChange = { query = it },
+                    onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) }
+                )
+                NewsList(news = state.news, onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) })
+            }
+        }
     }
 }
 
 @Composable
 private fun SearchBox(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    onSearchClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
     ) {
-        OutlinedTextField(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            value = query,
-            onValueChange = onQueryChange,
-            placeholder = { Text(text = stringResource(id = R.string.query_label)) },
-            maxLines = 1,
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = { Text(text = stringResource(id = R.string.query_label)) },
+                maxLines = 1,
+            )
+
+            SearchButton(
+                modifier = Modifier.wrapContentSize(),
+                onSearchClick = onSearchClick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchButton(
+    modifier: Modifier,
+    onSearchClick: () -> Unit,
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onSearchClick,
+    ) {
+        Icon(
+            Icons.Default.Search,
+            contentDescription = "",
+            tint = Color.Black
         )
     }
 }
+
 
 @Composable
 private fun NewsList(
@@ -142,10 +224,14 @@ private fun HomeScreenPreview() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
-            query = "",
-            news = list,
-            onQueryChange = {},
-            onItemClick = {},
+            state = HomeContract.State(
+                news = list,
+                isLoading = false,
+                isError = false,
+            ),
+            effectFlow = null,
+            onEventSent = {},
+            onNavigationRequested = {},
         )
     }
 }

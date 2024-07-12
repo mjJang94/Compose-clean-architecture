@@ -1,4 +1,4 @@
-package com.mj.compose_clean_architecture.ui.model
+package com.mj.compose_clean_architecture.data.model
 
 import com.google.gson.annotations.SerializedName
 

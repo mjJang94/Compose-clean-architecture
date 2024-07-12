@@ -1,4 +1,4 @@
-package com.mj.compose_clean_architecture.ui
+package com.mj.compose_clean_architecture.ui.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,8 +7,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,52 +18,36 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mj.compose_clean_architecture.common.ktx.parseJson
 import com.mj.compose_clean_architecture.common.ktx.toJson
-import com.mj.compose_clean_architecture.ui.model.News
+import com.mj.compose_clean_architecture.data.model.News
+import com.mj.compose_clean_architecture.ui.navigation.Navigation.Args.NEWS_DATA
 import com.mj.compose_clean_architecture.ui.screen.detail.DetailScreen
-import com.mj.compose_clean_architecture.ui.screen.home.HomeScreen
-import com.mj.compose_clean_architecture.ui.screen.home.HomeViewModel
-
-enum class MyScreen {
-    HOME, DETAIL
-}
-
 
 @Composable
-fun MyApp(
-    viewModel: HomeViewModel = viewModel(),
+fun AppNavigation(
     navController: NavHostController = rememberNavController()
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
 
-    val query by viewModel.query.collectAsState()
-
     NavHost(
         modifier = Modifier.fillMaxSize(),
         navController = navController,
-        startDestination = MyScreen.HOME.name,
+        startDestination = Navigation.Routes.HOME,
     ) {
-        composable(route = MyScreen.HOME.name) {
-            HomeScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White),
-                query = query,
-                onQueryChange = { input -> viewModel.updateQuery(input) },
-                onItemClick = { news ->
-                    val newsJson = news.toJson()
-                    navController.navigate("${MyScreen.DETAIL.name}/$newsJson")
-                }
-            )
+        composable(
+            route = Navigation.Routes.HOME
+        ) {
+            HomeScreenDestination(navController = navController)
         }
 
         composable(
-            route = "${MyScreen.DETAIL.name}/{news}",
-            arguments = listOf(navArgument("news") { type = NavType.StringType })
+            route = Navigation.Routes.DETAIL,
+            arguments = listOf(navArgument(NEWS_DATA) {
+                type = NavType.StringType
+            })
         ) {
-            val news = backStackEntry?.arguments?.getString("news").parseJson<News>()
-
+            val news = backStackEntry?.arguments?.getString(NEWS_DATA).parseJson<News>()
             if (news == null) {
-                navController.popBackStack(MyScreen.HOME.name, inclusive = false)
+                navController.popBackStack(Navigation.Routes.HOME, inclusive = false)
             } else {
                 DetailScreen(
                     modifier = Modifier
@@ -74,4 +58,20 @@ fun MyApp(
             }
         }
     }
+}
+
+object Navigation {
+    object Args {
+        const val NEWS_DATA = "news_data"
+    }
+
+    object Routes {
+        const val HOME = "home"
+        const val DETAIL = "detail/${NEWS_DATA}"
+    }
+}
+
+fun NavController.navigateToDetail(news: News) {
+    val newsJson = news.toJson()
+    navigate(route = "${Navigation.Routes.DETAIL}/$newsJson")
 }

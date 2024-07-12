@@ -20,7 +20,9 @@ androidx-compose-material3 = "1.2.1"
 androidx-compose-navigation = "2.7.7"
 androidx-compose-lifecycle-viewmodel = "2.8.3"
 
+
 hilt = "2.48"
+hilt-navigation-compose = "1.2.0"
 retrofit = "2.9.0"
 interceptor = "4.11.0"
 glide = "5.0.0-rc01"
@@ -53,6 +55,7 @@ androidx-compose-material = { group = "androidx.compose.material", name = "mater
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidx-compose-material3" }
 androidx-compose-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidx-compose-navigation" }
 androidx-compose-lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-compose-lifecycle-viewmodel" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
