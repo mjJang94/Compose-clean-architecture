@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.icons.Icons
@@ -26,8 +25,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,16 +36,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.mj.compose_clean_architecture.R
 import com.mj.compose_clean_architecture.common.ktx.applyDateFormat
-import com.mj.compose_clean_architecture.data.model.News
 import com.mj.compose_clean_architecture.ui.base.SIDE_EFFECTS_KEY
 import com.mj.compose_clean_architecture.ui.common.NetworkError
 import com.mj.compose_clean_architecture.ui.common.Progress
 import com.mj.compose_clean_architecture.ui.theme.ComposeCleanArchitectureTheme
 import com.mj.compose_clean_architecture.ui.theme.Typography
+import com.mj.domain.model.News
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 
 @Composable
@@ -62,6 +63,7 @@ fun HomeScreen(
     val scaffoldState: ScaffoldState = rememberScaffoldState()
     val dataLoadedMsg = stringResource(R.string.home_screen_snackbar_loaded_message)
     var query by remember { mutableStateOf("") }
+    val lazyPagingItems = state.newsInfo.collectAsLazyPagingItems()
 
     LaunchedEffect(SIDE_EFFECTS_KEY) {
         effectFlow?.onEach { effect ->
@@ -88,7 +90,7 @@ fun HomeScreen(
                     onQueryChange = { query = it },
                     onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) }
                 )
-                NewsList(news = state.news, onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) })
+                NewsList(news = lazyPagingItems, onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) })
             }
         }
     }
@@ -148,16 +150,17 @@ private fun SearchButton(
 
 @Composable
 private fun NewsList(
-    news: List<News>,
+    news: LazyPagingItems<News>,
     onItemClick: (News) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(all = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(news) { news ->
+        items(news.itemCount) { index ->
+            val item = news[index] ?: return@items
             NewsRow(
-                news = news,
+                newsInfo = item,
                 onItemClick = onItemClick,
             )
         }
@@ -166,17 +169,17 @@ private fun NewsList(
 
 @Composable
 private fun NewsRow(
-    news: News,
+    newsInfo: News,
     onItemClick: (News) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clickable { onItemClick(news) }
+            .clickable { onItemClick(newsInfo) }
     ) {
         Text(
-            text = news.title,
+            text = newsInfo.title,
             style = Typography.titleLarge,
             overflow = TextOverflow.Ellipsis,
         )
@@ -184,7 +187,7 @@ private fun NewsRow(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = news.description,
+            text = newsInfo.description,
             style = Typography.bodyMedium,
             maxLines = 5,
             overflow = TextOverflow.Ellipsis,
@@ -193,7 +196,7 @@ private fun NewsRow(
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = news.date,
+            text = newsInfo.date,
             style = Typography.bodySmall,
             maxLines = 1,
         )
@@ -225,7 +228,7 @@ private fun HomeScreenPreview() {
                 .fillMaxSize()
                 .background(Color.White),
             state = HomeContract.State(
-                news = list,
+                newsInfo = flow { PagingData.empty<News>() },
                 isLoading = false,
                 isError = false,
             ),
@@ -247,7 +250,7 @@ private fun NewListRow() {
             date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat()
         )
         NewsRow(
-            news = mock,
+            newsInfo = mock,
             onItemClick = {},
         )
     }

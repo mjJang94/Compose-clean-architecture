@@ -1,4 +1,4 @@
-package com.mj.data.repo.remote
+package com.mj.data.repo.remote.api
 
 object Endpoints {
     const val BASE_URL = "https://openapi.naver.com/v1/"

@@ -53,6 +53,9 @@ android {
 
 dependencies {
 
+    implementation(project(":data"))
+    implementation(project(":domain"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -75,6 +78,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.lifecycle.viewmodel)
+    implementation(libs.androidx.compose.paging)
+    implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.hilt.android)
@@ -83,11 +88,4 @@ dependencies {
     implementation(libs.retrofit.converter)
     implementation(libs.retrofit.interceptor)
     implementation(libs.gson)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }

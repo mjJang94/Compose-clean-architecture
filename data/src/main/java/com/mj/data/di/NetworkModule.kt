@@ -2,8 +2,10 @@ package com.mj.data.di
 
 import android.util.Log
 import com.mj.data.repo.RepositoryImpl
-import com.mj.data.repo.remote.Endpoints
+import com.mj.data.repo.remote.api.Endpoints
 import com.mj.data.repo.remote.api.NaverApi
+import com.mj.data.repo.source.RemoteDataSource
+import com.mj.data.repo.source.RemoteDataSourceImpl
 import com.mj.domain.Repository
 import dagger.Module
 import dagger.Provides
@@ -44,6 +46,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRepository(apiService: NaverApi): Repository =
-        RepositoryImpl(apiService)
+    fun provideRemoteDataSource(apiService: NaverApi): RemoteDataSource =
+        RemoteDataSourceImpl(apiService)
+
+    @Provides
+    @Singleton
+    fun provideRepository(remoteDataSource: RemoteDataSource): Repository =
+        RepositoryImpl(remoteDataSource)
 }

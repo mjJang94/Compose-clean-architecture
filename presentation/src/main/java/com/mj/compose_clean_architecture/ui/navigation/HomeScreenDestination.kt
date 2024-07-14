@@ -25,7 +25,7 @@ fun HomeScreenDestination(
         onEventSent = { event -> viewModel.setEvent(event) },
         onNavigationRequested = { navigationEffect ->
             if (navigationEffect is HomeContract.Effect.Navigation.ToDetail) {
-                navController.navigateToDetail(navigationEffect.news)
+                navController.navigateToDetail(navigationEffect.newsInfo)
             }
         },
     )

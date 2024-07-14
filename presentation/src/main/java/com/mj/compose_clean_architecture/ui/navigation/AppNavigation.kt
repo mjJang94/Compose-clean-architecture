@@ -3,11 +3,9 @@ package com.mj.compose_clean_architecture.ui.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -18,9 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mj.compose_clean_architecture.common.ktx.parseJson
 import com.mj.compose_clean_architecture.common.ktx.toJson
-import com.mj.compose_clean_architecture.data.model.News
 import com.mj.compose_clean_architecture.ui.navigation.Navigation.Args.NEWS_DATA
 import com.mj.compose_clean_architecture.ui.screen.detail.DetailScreen
+import com.mj.domain.model.News
 
 @Composable
 fun AppNavigation(
@@ -53,7 +51,7 @@ fun AppNavigation(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.White),
-                    news = news
+                    news = news,
                 )
             }
         }
