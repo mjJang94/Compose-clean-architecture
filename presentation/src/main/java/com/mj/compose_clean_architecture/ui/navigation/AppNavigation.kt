@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mj.compose_clean_architecture.common.ktx.parseJson
 import com.mj.compose_clean_architecture.common.ktx.toJson
+import com.mj.compose_clean_architecture.model.NewsInfo
 import com.mj.compose_clean_architecture.ui.navigation.Navigation.Args.NEWS_DATA
 import com.mj.compose_clean_architecture.ui.screen.detail.DetailScreen
 import com.mj.domain.model.News
@@ -69,7 +70,7 @@ object Navigation {
     }
 }
 
-fun NavController.navigateToDetail(news: News) {
-    val newsJson = news.toJson()
+fun NavController.navigateToDetail(newsInfo: NewsInfo) {
+    val newsJson = newsInfo.toJson()
     navigate(route = "${Navigation.Routes.DETAIL}/$newsJson")
 }

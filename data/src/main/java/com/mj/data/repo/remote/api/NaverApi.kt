@@ -13,5 +13,5 @@ interface NaverApi {
         @Query("start") start: Int = 1,
         @Query("display") display: Int,
         @Query("query") q: String,
-    ): List<NewsDto>
+    ): NewsDto
 }

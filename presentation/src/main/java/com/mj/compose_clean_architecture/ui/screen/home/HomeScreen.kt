@@ -1,5 +1,6 @@
 package com.mj.compose_clean_architecture.ui.screen.home
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,15 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.SnackbarDuration
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,24 +32,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.mj.compose_clean_architecture.R
 import com.mj.compose_clean_architecture.common.ktx.applyDateFormat
+import com.mj.compose_clean_architecture.model.NewsInfo
 import com.mj.compose_clean_architecture.ui.base.SIDE_EFFECTS_KEY
+import com.mj.compose_clean_architecture.ui.common.HtmlText
 import com.mj.compose_clean_architecture.ui.common.NetworkError
 import com.mj.compose_clean_architecture.ui.common.Progress
 import com.mj.compose_clean_architecture.ui.theme.ComposeCleanArchitectureTheme
+import com.mj.compose_clean_architecture.ui.theme.Purple30
+import com.mj.compose_clean_architecture.ui.theme.Purple40
+import com.mj.compose_clean_architecture.ui.theme.Sky
 import com.mj.compose_clean_architecture.ui.theme.Typography
-import com.mj.domain.model.News
+import com.mj.compose_clean_architecture.ui.theme.White
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 
 @Composable
@@ -60,21 +61,14 @@ fun HomeScreen(
     onEventSent: (event: HomeContract.Event) -> Unit,
     onNavigationRequested: (effect: HomeContract.Effect.Navigation) -> Unit
 ) {
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val context = LocalContext.current
     val dataLoadedMsg = stringResource(R.string.home_screen_snackbar_loaded_message)
     var query by remember { mutableStateOf("") }
-    val lazyPagingItems = state.newsInfo.collectAsLazyPagingItems()
 
     LaunchedEffect(SIDE_EFFECTS_KEY) {
         effectFlow?.onEach { effect ->
             when (effect) {
-                is HomeContract.Effect.DataLoaded -> {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message = dataLoadedMsg,
-                        duration = SnackbarDuration.Short,
-                    )
-                }
-
+                is HomeContract.Effect.DataLoaded -> Toast.makeText(context, dataLoadedMsg, Toast.LENGTH_SHORT).show()
                 is HomeContract.Effect.Navigation.ToDetail -> onNavigationRequested(effect)
             }
         }?.collect()
@@ -90,7 +84,7 @@ fun HomeScreen(
                     onQueryChange = { query = it },
                     onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) }
                 )
-                NewsList(news = lazyPagingItems, onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) })
+                NewsList(news = state.newsInfo, onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) })
             }
         }
     }
@@ -118,7 +112,17 @@ private fun SearchBox(
                 modifier = Modifier.weight(1f),
                 value = query,
                 onValueChange = onQueryChange,
-                placeholder = { Text(text = stringResource(id = R.string.query_label)) },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = White,
+                    unfocusedContainerColor = White,
+                    unfocusedTextColor = Purple30,
+                    focusedTextColor = Sky,
+                ),
+                placeholder = {
+                    if (query.isEmpty()) {
+                        Text(text = stringResource(id = R.string.query_label))
+                    }
+                },
                 maxLines = 1,
             )
 
@@ -150,17 +154,16 @@ private fun SearchButton(
 
 @Composable
 private fun NewsList(
-    news: LazyPagingItems<News>,
-    onItemClick: (News) -> Unit,
+    news: List<NewsInfo>,
+    onItemClick: (NewsInfo) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(all = 10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(news.itemCount) { index ->
-            val item = news[index] ?: return@items
+        items(news) { news ->
             NewsRow(
-                newsInfo = item,
+                newsInfo = news,
                 onItemClick = onItemClick,
             )
         }
@@ -169,8 +172,8 @@ private fun NewsList(
 
 @Composable
 private fun NewsRow(
-    newsInfo: News,
-    onItemClick: (News) -> Unit,
+    newsInfo: NewsInfo,
+    onItemClick: (NewsInfo) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -178,25 +181,24 @@ private fun NewsRow(
             .wrapContentHeight()
             .clickable { onItemClick(newsInfo) }
     ) {
-        Text(
-            text = newsInfo.title,
-            style = Typography.titleLarge,
-            overflow = TextOverflow.Ellipsis,
+        HtmlText(
+            htmlText = newsInfo.title,
+            textStyle = Typography.titleLarge,
+            maxLine = 2,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = newsInfo.description,
-            style = Typography.bodyMedium,
-            maxLines = 5,
-            overflow = TextOverflow.Ellipsis,
+        HtmlText(
+            htmlText = newsInfo.description,
+            textStyle = Typography.bodyMedium,
+            maxLine = 10,
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = newsInfo.date,
+            text = newsInfo.date.applyDateFormat(),
             style = Typography.bodySmall,
             maxLines = 1,
         )
@@ -209,14 +211,14 @@ private fun HomeScreenPreview() {
     ComposeCleanArchitectureTheme {
 
         val list = mutableListOf(
-            News(
+            NewsInfo(
                 title = "국내주식 형펀스서 사흘때 자금 순유출",
                 description = "국내 주식형 펀드에서 사흘째 자금이 빠져나갔다. 26일 금융투자협회에 따르면 지난 22일 상장지수펀드(ETF)를 제외한 국내 주식형 펀드에서 126억원이 순유출됐다. 472억원이 들어오고 598억원이 펀드...",
                 link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
                 date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat()
             ),
 
-            News(
+            NewsInfo(
                 title = "테스트 뉴스 타이틀로 표현",
                 description = "국내 주식형 펀드에서 사흘째 자금이 빠져나갔다. 26일 금융투자협회에 따르면 지난 22일 상장지수펀드(ETF)를 제외한 국내 주식형 펀드에서 126억원이 순유출됐다. 472억원이 들어오고 598억원이 펀드...",
                 link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
@@ -228,7 +230,7 @@ private fun HomeScreenPreview() {
                 .fillMaxSize()
                 .background(Color.White),
             state = HomeContract.State(
-                newsInfo = flow { PagingData.empty<News>() },
+                newsInfo = list,
                 isLoading = false,
                 isError = false,
             ),
@@ -243,7 +245,7 @@ private fun HomeScreenPreview() {
 @Preview(showBackground = true)
 private fun NewListRow() {
     ComposeCleanArchitectureTheme {
-        val mock = News(
+        val mock = NewsInfo(
             title = "국내주식 형펀스서 사흘때 자금 순유출",
             description = "국내 주식형 펀드에서 사흘째 자금이 빠져나갔다. 26일 금융투자협회에 따르면 지난 22일 상장지수펀드(ETF)를 제외한 국내 주식형 펀드에서 126억원이 순유출됐다. 472억원이 들어오고 598억원이 펀드...",
             link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
