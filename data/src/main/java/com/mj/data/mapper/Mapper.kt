@@ -3,7 +3,7 @@ package com.mj.data.mapper
 import com.mj.data.repo.remote.data.NewsDto
 import com.mj.domain.model.News
 
-fun List<NewsDto>.translate(): List<News> = this.map {
+fun NewsDto.translate(): List<News> = this.items.map {
     News(
         title = it.title,
         description = it.description,
