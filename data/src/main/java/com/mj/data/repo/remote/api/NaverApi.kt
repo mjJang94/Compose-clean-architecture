@@ -11,7 +11,7 @@ interface NaverApi {
         @Header("X-Naver-Client-Id") id: String = Endpoints.NAVER_CLIENT_ID,
         @Header("X-Naver-Client-Secret") secret: String = Endpoints.NAVER_CLIENT_SECRET,
         @Query("start") start: Int = 1,
-        @Query("display") display: Int,
+        @Query("display") display: Int = 20,
         @Query("query") q: String,
     ): NewsDto
 }

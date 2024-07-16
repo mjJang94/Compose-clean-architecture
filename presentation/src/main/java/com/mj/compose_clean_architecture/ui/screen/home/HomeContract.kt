@@ -5,8 +5,7 @@ import com.mj.compose_clean_architecture.model.NewsInfo
 import com.mj.compose_clean_architecture.ui.base.ViewEvent
 import com.mj.compose_clean_architecture.ui.base.ViewSideEffect
 import com.mj.compose_clean_architecture.ui.base.ViewState
-import com.mj.domain.model.News
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 class HomeContract {
 
@@ -17,7 +16,7 @@ class HomeContract {
     }
 
     data class State(
-        val newsInfo: List<NewsInfo>,
+        val newsPagingInfo: StateFlow<PagingData<NewsInfo>>,
         val isLoading: Boolean,
         val isError: Boolean,
     ): ViewState
