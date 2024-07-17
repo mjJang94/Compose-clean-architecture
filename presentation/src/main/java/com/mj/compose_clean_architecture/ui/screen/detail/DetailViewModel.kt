@@ -9,18 +9,20 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor():
     BaseViewModel<DetailContract.Event, DetailContract.State, DetailContract.Effect>() {
 
+    override fun setInitialState() = DetailContract.State(
+        newsUrl = "",
+        progress = 0,
+    )
+
     fun configure(url: String) {
         setState { copy(newsUrl = url) }
     }
-
-    override fun setInitialState() = DetailContract.State(
-        newsUrl = "",
-    )
 
     override fun handleEvents(event: DetailContract.Event) {
         Log.d("DetailViewModel", "event = $event")
         when (event) {
             is DetailContract.Event.Back -> setEffect { DetailContract.Effect.Navigation.ToMain }
+            is DetailContract.Event.Loading -> setState { copy(progress = event.progress) }
         }
     }
 }
