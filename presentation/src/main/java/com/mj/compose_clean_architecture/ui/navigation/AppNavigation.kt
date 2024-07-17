@@ -1,58 +1,46 @@
 package com.mj.compose_clean_architecture.ui.navigation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.mj.compose_clean_architecture.common.ktx.parseJson
-import com.mj.compose_clean_architecture.common.ktx.toJson
-import com.mj.compose_clean_architecture.model.NewsInfo
 import com.mj.compose_clean_architecture.ui.navigation.Navigation.Args.NEWS_DATA
-import com.mj.compose_clean_architecture.ui.screen.detail.DetailScreen
-import com.mj.domain.model.News
+import com.mj.compose_clean_architecture.ui.navigation.Navigation.Routes.DETAIL
+import com.mj.compose_clean_architecture.ui.navigation.Navigation.Routes.HOME
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @Composable
-fun AppNavigation(
-    navController: NavHostController = rememberNavController()
-) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
+fun AppNavigation() {
+
+    val navController = rememberNavController()
 
     NavHost(
         modifier = Modifier.fillMaxSize(),
         navController = navController,
-        startDestination = Navigation.Routes.HOME,
+        startDestination = HOME,
     ) {
-        composable(
-            route = Navigation.Routes.HOME
-        ) {
+        composable(route = HOME) {
             HomeScreenDestination(navController = navController)
         }
 
         composable(
-            route = Navigation.Routes.DETAIL,
-            arguments = listOf(navArgument(NEWS_DATA) {
+            route = "$DETAIL/{$NEWS_DATA}",
+            arguments = listOf(navArgument(name = NEWS_DATA) {
                 type = NavType.StringType
             })
-        ) {
-            val news = backStackEntry?.arguments?.getString(NEWS_DATA).parseJson<News>()
-            if (news == null) {
-                navController.popBackStack(Navigation.Routes.HOME, inclusive = false)
+        ) { backStackEntry ->
+            val link = backStackEntry.arguments?.getString(NEWS_DATA)
+            if (link == null) {
+                navController.popBackStack()
             } else {
-                DetailScreen(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.White),
-                    news = news,
+                DetailScreenDestination(
+                    link = URLDecoder.decode(link, StandardCharsets.UTF_8.toString()),
+                    navController = navController,
                 )
             }
         }
@@ -66,11 +54,6 @@ object Navigation {
 
     object Routes {
         const val HOME = "home"
-        const val DETAIL = "detail/${NEWS_DATA}"
+        const val DETAIL = "detail"
     }
-}
-
-fun NavController.navigateToDetail(newsInfo: NewsInfo) {
-    val newsJson = newsInfo.toJson()
-    navigate(route = "${Navigation.Routes.DETAIL}/$newsJson")
 }

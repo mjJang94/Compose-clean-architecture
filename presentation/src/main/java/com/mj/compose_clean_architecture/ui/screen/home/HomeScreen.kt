@@ -69,7 +69,7 @@ fun HomeScreen(
     state: HomeContract.State,
     effectFlow: Flow<HomeContract.Effect>?,
     onEventSent: (event: HomeContract.Event) -> Unit,
-    onNavigationRequested: (effect: HomeContract.Effect.Navigation) -> Unit
+    onNavigationRequested: (effect: HomeContract.Effect.Navigation) -> Unit,
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current

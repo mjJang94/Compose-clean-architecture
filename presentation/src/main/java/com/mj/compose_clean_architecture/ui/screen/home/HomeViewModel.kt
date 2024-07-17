@@ -11,7 +11,6 @@ import com.mj.domain.model.News
 import com.mj.domain.usecase.GetNewsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -52,7 +51,6 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun PagingData<News>.translate(): PagingData<NewsInfo> = this.map {
-
         NewsInfo(
             it.title,
             it.description,

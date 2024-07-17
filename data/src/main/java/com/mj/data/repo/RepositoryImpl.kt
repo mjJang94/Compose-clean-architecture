@@ -15,19 +15,16 @@ class RepositoryImpl @Inject constructor(
 ) : Repository {
 
     override val maxPageSize: Int = 20
-    override val prefetchDistance: Int = 8
+    override val prefetchDistance: Int = 10
 
-    override suspend fun getNews(query: String): Flow<PagingData<News>> {
-     val s = Pager(
-         config = PagingConfig(pageSize = maxPageSize, prefetchDistance),
-         pagingSourceFactory = {
-             NewsPagingSource(
-                 remoteDataSource = remoteDataSource,
-                 query = query,
-             )
-         }
-     ).flow
-
-     return s
-    }
+    override suspend fun getNews(query: String): Flow<PagingData<News>> =
+        Pager(
+            config = PagingConfig(pageSize = maxPageSize, prefetchDistance),
+            pagingSourceFactory = {
+                NewsPagingSource(
+                    remoteDataSource = remoteDataSource,
+                    query = query,
+                )
+            }
+        ).flow
 }
