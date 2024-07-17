@@ -13,11 +13,11 @@ import com.mj.compose_clean_architecture.ui.screen.detail.DetailViewModel
 
 @Composable
 fun DetailScreenDestination(
-    link: String,
+    url: String,
     viewModel: DetailViewModel = hiltViewModel(),
     navController: NavHostController
 ) {
-    viewModel.configure(link)
+    viewModel.configure(url)
 
     DetailScreen(
         modifier = Modifier

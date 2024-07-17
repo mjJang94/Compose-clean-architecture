@@ -30,13 +30,14 @@ fun HomeScreenDestination(
         onEventSent = { event -> viewModel.setEvent(event) },
         onNavigationRequested = { navigationEffect ->
             if (navigationEffect is HomeContract.Effect.Navigation.ToDetail) {
-                navController.navigateToDetail(navigationEffect.newsInfo.link)
+                navController.navigateToDetail(navigationEffect.url)
             }
         },
     )
 }
 
 fun NavHostController.navigateToDetail(url: String) {
-    val encodeUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
-    navigate(route = "$DETAIL/$encodeUrl")
+    URLEncoder.encode(url, StandardCharsets.UTF_8.toString()).also { encodeUrl ->
+        navigate(route = "$DETAIL/$encodeUrl")
+    }
 }

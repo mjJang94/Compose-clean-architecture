@@ -34,12 +34,12 @@ fun AppNavigation() {
                 type = NavType.StringType
             })
         ) { backStackEntry ->
-            val link = backStackEntry.arguments?.getString(NEWS_DATA)
-            if (link == null) {
+            val url = backStackEntry.arguments?.getString(NEWS_DATA)
+            if (url == null) {
                 navController.popBackStack()
             } else {
                 DetailScreenDestination(
-                    link = URLDecoder.decode(link, StandardCharsets.UTF_8.toString()),
+                    url = URLDecoder.decode(url, StandardCharsets.UTF_8.toString()),
                     navController = navController,
                 )
             }

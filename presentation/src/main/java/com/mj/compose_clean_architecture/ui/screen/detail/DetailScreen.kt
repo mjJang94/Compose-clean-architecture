@@ -1,7 +1,11 @@
 package com.mj.compose_clean_architecture.ui.screen.detail
 
+import android.net.http.SslError
+import android.util.Log
 import android.view.ViewGroup
+import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -104,16 +108,22 @@ private fun WebView(
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             this.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
+                override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
+                    super.onReceivedSslError(view, handler, error)
+                    handler.proceed()
+                }
+
+                override fun onPageFinished(view: WebView, url: String) {
                     super.onPageFinished(view, url)
                     onLoadFinished()
                 }
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                    view?.loadUrl(request?.url.toString())
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    view.loadUrl(request.url.toString())
                     return true
                 }
             }
             this.webChromeClient = object : WebChromeClient() {
+
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                     super.onProgressChanged(view, newProgress)
                     onProgressChanged(newProgress)
