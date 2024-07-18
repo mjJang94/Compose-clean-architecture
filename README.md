@@ -1,17 +1,14 @@
-
 # Android - Compose Clean Architecture - Kotlin
 Compose Clean Architecture 앱은 Naver 검색 API를 활용하여 검색어와 관련된 뉴스 리스트를 보여주는 간단한 스터디 목적의 앱입니다.   
-
 또한 클린 아키텍처 원칙을 안드로이드 프로젝트에 적용해 보고, Kotlin 프로그래밍 언어의 기능을 최대한 활용해보는 것을 목표로 하고 있습니다.
 
 
 # Application Scope
-* * *
 * Home Screen - 검색어 입력을 통해 관련된 뉴스 기사들을 볼 수 있습니다.
 * Detail Screen - 원본 뉴스 기사 보기를 지원합니다.
 
+
 # Tech-Stack
-* * *
 이 프로젝트는 Android 개발 관행과 많은 인기 있는 라이브러리 및 도구를 활용하고 학습하는것에 목적을 두고 있습니다.   
 대부분의 라이브러리는 안정된 버전을 사용하며, 특별한 이유가 없는 한 비안정적인 의존성은 사용하지 않습니다.
 * Tech-stack
@@ -40,9 +37,7 @@ Compose Clean Architecture 앱은 Naver 검색 API를 활용하여 검색어와 
     * 빌드 전 Clean
     * 빌드 작업 수행
     
-          
 # Project Modules
-* * *
 * data
   * Repository 구현
   * API 상호작용
@@ -58,7 +53,6 @@ Compose Clean Architecture 앱은 Naver 검색 API를 활용하여 검색어와 
 
 
 # Architecture
-* * *
 * View - 상태를 소비하고, 효과를 적용하며, 이벤트를 위임하는 Composable 화면입니다.   
 
 
