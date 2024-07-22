@@ -53,8 +53,7 @@ android {
 
 dependencies {
 
-    implementation(project(":data"))
-    implementation(project(":domain"))
+    implementation(project(":feature:home"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -65,27 +64,23 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.animationGraphics)
-    implementation(libs.androidx.compose.animationGraphicsAndroid)
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.uiTooling)
-    implementation(libs.androidx.compose.uiToolingPreview)
-    implementation(libs.androidx.compose.uiUtil)
-    implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.navigation)
-    implementation(libs.androidx.compose.lifecycle.viewmodel)
-    implementation(libs.androidx.compose.paging)
-    implementation(libs.androidx.paging.runtime)
-    implementation(libs.androidx.hilt.navigation.compose)
+//    implementation(libs.androidx.compose.runtime)
+//    implementation(libs.androidx.compose.animation)
+//    implementation(libs.androidx.compose.animationGraphics)
+//    implementation(libs.androidx.compose.animationGraphicsAndroid)
+//    implementation(libs.androidx.compose.foundation)
+//    implementation(libs.androidx.compose.ui)
+//    implementation(libs.androidx.compose.uiTooling)
+//    implementation(libs.androidx.compose.uiToolingPreview)
+//    implementation(libs.androidx.compose.uiUtil)
+//    implementation(libs.androidx.compose.material)
+//    implementation(libs.androidx.compose.material3)
+//    implementation(libs.androidx.compose.navigation)
+//    implementation(libs.androidx.compose.lifecycle.viewmodel)
+//    implementation(libs.androidx.compose.paging)
+//    implementation(libs.androidx.paging.runtime)
+//    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-
-    implementation(libs.retrofit.converter)
-    implementation(libs.retrofit.interceptor)
-    implementation(libs.gson)
 }

@@ -1,0 +1,25 @@
+package io.kiwiplus.app.detail
+
+import com.mj.compose_clean_architecture.ui.base.ViewEvent
+import com.mj.compose_clean_architecture.ui.base.ViewSideEffect
+import com.mj.compose_clean_architecture.ui.base.ViewState
+
+class DetailContract {
+
+    sealed class Event: ViewEvent {
+        data object Back: Event()
+        data class Loading(val progress: Int): Event()
+    }
+
+    data class State(
+        val newsUrl: String,
+        val progress: Int,
+    ): ViewState
+
+    sealed class Effect: ViewSideEffect {
+
+        sealed class Navigation: Effect() {
+            data object ToMain: Navigation()
+        }
+    }
+}

@@ -23,3 +23,6 @@ rootProject.name = "Compose-clean-architecture"
 include(":presentation")
 include(":domain")
 include(":data")
+include(":feature:home")
+include(":feature:detail")
+include(":core")
