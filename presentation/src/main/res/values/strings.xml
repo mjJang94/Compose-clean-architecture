@@ -1,10 +1,3 @@
 <resources>
     <string name="app_name">Compose-clean-architecture</string>
-
-    <string name="query_label">검색어</string>
-    <string name="home_screen_loaded_message">검색 결과 노출</string>
-    <string name="network_error_title">로드 실패</string>
-    <string name="network_error_description">네트워크 에러가 발생했어요. 인터넷 연결 상태를 확인하시거나 재시도 해주세요. </string>
-    <string name="network_error_retry_button_text">다시 불러오기</string>
-    <string name="fetch_data_from_server">다음 데이터 불러옴</string>
 </resources>

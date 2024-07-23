@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "io.kiwiplus.app.home"
+    namespace = "com.mj.feature.home"
     compileSdk = 34
 
     defaultConfig {
@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation(project(":domain"))
+    implementation(project(":core"))
 
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.animation)
