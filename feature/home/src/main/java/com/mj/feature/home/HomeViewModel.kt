@@ -8,8 +8,10 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.mj.core.base.BaseViewModel
 import com.mj.domain.usecase.GetNewsUseCase
+import com.mj.domain.usecase.GetNewsUseCase.GetNewsParam as Param
 import com.mj.feature.home.model.NewsInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -37,7 +39,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-
     private val maxPageSize: Int = 20
     private val prefetchDistance: Int = 10
     private fun getNews(query: String) {
@@ -46,7 +47,12 @@ class HomeViewModel @Inject constructor(
                 config = PagingConfig(pageSize = maxPageSize, prefetchDistance),
                 pagingSourceFactory = {
                     NewsPagingSource(
-                        getNewsUseCase = getNewsUseCase,
+                        load = { query, index ->
+                            getNewsUseCase(
+                                dispatcher = Dispatchers.IO,
+                                param = Param(query, index),
+                            )
+                        },
                         query = query,
                     )
                 }

@@ -7,17 +7,14 @@ import com.mj.domain.usecase.GetNewsUseCase
 import com.mj.feature.home.model.NewsInfo
 
 class NewsPagingSource(
-    private val getNewsUseCase: GetNewsUseCase,
+    private val load: suspend (query: String, index: Int) -> News,
     private val query: String,
 ) : PagingSource<Int, NewsInfo.Content>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, NewsInfo.Content> {
         return try {
             val currentPage = params.key ?: 1
-            val news = getNewsUseCase(
-                query = query,
-                start = currentPage,
-            ).translate()
+            val news = load.invoke(query, currentPage).translate()
 
             LoadResult.Page(
                 data = news.contents,
