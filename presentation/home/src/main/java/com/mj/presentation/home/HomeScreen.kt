@@ -326,13 +326,13 @@ fun NetworkError(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        androidx.compose.material.Text(
+        Text(
             text = stringResource(R.string.network_error_title),
             style = Typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
 
-        androidx.compose.material.Text(
+        Text(
             text = stringResource(R.string.network_error_description),
             style = Typography.bodySmall,
             modifier = Modifier.padding(16.dp),
@@ -340,9 +340,7 @@ fun NetworkError(
         )
 
         Button(onClick = { onRetryButtonClick() }) {
-            androidx.compose.material.Text(
-                text = stringResource(R.string.network_error_retry_button_text).uppercase()
-            )
+            Text(text = stringResource(R.string.network_error_retry_button_text).uppercase())
         }
     }
 }
