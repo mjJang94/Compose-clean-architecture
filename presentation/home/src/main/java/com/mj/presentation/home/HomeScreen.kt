@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.mj.presentation.home
 
 import android.graphics.Typeface
 import android.text.TextUtils
 import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,19 +22,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -64,10 +73,12 @@ import com.mj.core.theme.Typography
 import com.mj.core.theme.White
 import com.mj.feature.home.R
 import com.mj.presentation.home.model.NewsInfo.Content
+import com.mj.presentation.home.model.Pages
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -78,7 +89,11 @@ fun HomeScreen(
     onNavigationRequested: (effect: HomeContract.Effect.Navigation) -> Unit,
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
+    val pagerState = rememberPagerState(
+        pageCount = { Pages.entries.size }
+    )
 
     val newsPagingItem = state.newsPagingInfo.collectAsLazyPagingItems()
 
@@ -99,16 +114,69 @@ fun HomeScreen(
             state.isLoading -> Progress()
             state.isError -> NetworkError { onEventSent(HomeContract.Event.Retry(query)) }
             else -> {
-                SearchBox(
-                    fm = focusManager,
+
+                HomeContent(
+                    focusManager = focusManager,
+                    pagerState = pagerState,
                     query = query,
-                    onQueryChange = { query = it },
-                    onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) }
-                )
-                NewsList(
-                    newsPagingItem = newsPagingItem,
+                    pagingItems = newsPagingItem,
+                    onQueryChanged = { query = it },
+                    onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) },
                     onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) },
+                    onPageChanged = { index ->
+                        coroutineScope.launch {
+                            pagerState.scrollToPage(index)
+                        }
+                    },
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeContent(
+    focusManager: FocusManager,
+    pagerState: PagerState,
+    query: String,
+    pagingItems: LazyPagingItems<Content>,
+    onQueryChanged: (String) -> Unit,
+    onSearchClick: () -> Unit,
+    onItemClick: (String) -> Unit,
+    onPageChanged: (Int) -> Unit,
+) {
+    SearchBox(
+        fm = focusManager,
+        query = query,
+        onQueryChange = onQueryChanged,
+        onSearchClick = onSearchClick,
+    )
+
+    TabRow(selectedTabIndex = pagerState.currentPage) {
+        Pages.entries.forEachIndexed { index, title ->
+            Tab(
+                modifier = Modifier.background(Color.White),
+                text = { Text(text = stringResource(id = title.resId)) },
+                selected = pagerState.currentPage == index,
+                onClick = { onPageChanged(index) },
+            )
+        }
+    }
+
+    HorizontalPager(
+        state = pagerState,
+        beyondBoundsPageCount = pagerState.pageCount,
+    ) { index ->
+        when (Pages.entries[index]) {
+            Pages.SEARCH -> {
+                NewsList(
+                    newsPagingItem = pagingItems,
+                    onItemClick = onItemClick,
+                )
+            }
+
+            Pages.SCRAP -> {
+                Text(text = "Scrap")
             }
         }
     }
@@ -156,7 +224,8 @@ private fun SearchBox(
                     focusedTextColor = Sky,
                 ),
                 label = {
-                    Text(text = stringResource(id = R.string.query_label),) },
+                    Text(text = stringResource(id = R.string.query_label))
+                },
             )
         }
     }
@@ -167,36 +236,48 @@ private fun NewsList(
     newsPagingItem: LazyPagingItems<Content>,
     onItemClick: (String) -> Unit,
 ) {
-    LazyColumn(
-        contentPadding = PaddingValues(all = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        items(newsPagingItem.itemCount) { index ->
-            val news = newsPagingItem[index] ?: return@items
-            NewsRow(
-                newsInfo = news,
-                onItemClick = onItemClick,
+        if (newsPagingItem.itemCount < 1) {
+            Text(
+                text = stringResource(id = R.string.home_screen_loaded_result_empty)
             )
-        }
-
-        newsPagingItem.apply {
-            when {
-                loadState.refresh is LoadState.Loading -> {
-                    item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(all = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(newsPagingItem.itemCount) { index ->
+                    val news = newsPagingItem[index] ?: return@items
+                    NewsRow(
+                        newsInfo = news,
+                        onItemClick = onItemClick,
+                    )
                 }
 
-                loadState.refresh is LoadState.Error -> {
-                    val error = newsPagingItem.loadState.refresh as LoadState.Error
-                    item {
-                        ErrorMessage(
-                            modifier = Modifier.fillParentMaxSize(),
-                            message = error.error.localizedMessage!!,
-                            onClickRetry = { retry() })
+                newsPagingItem.apply {
+                    when {
+                        loadState.refresh is LoadState.Loading -> {
+                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
+                        }
+
+                        loadState.refresh is LoadState.Error -> {
+                            val error = newsPagingItem.loadState.refresh as LoadState.Error
+                            item {
+                                ErrorMessage(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    message = error.error.localizedMessage!!,
+                                    onClickRetry = { retry() })
+                            }
+                        }
+
+                        loadState.append is LoadState.Loading -> {
+                            item { LoadingNextPageItem(modifier = Modifier) }
+                        }
                     }
-                }
-
-                loadState.append is LoadState.Loading -> {
-                    item { LoadingNextPageItem(modifier = Modifier) }
                 }
             }
         }
@@ -301,7 +382,7 @@ fun HtmlText(
             TextView(context).apply {
                 ellipsize = TextUtils.TruncateAt.END
                 textSize = textStyle.fontSize.value
-                val style = when(textStyle.fontWeight?.weight) {
+                val style = when (textStyle.fontWeight?.weight) {
                     FontWeight.Bold.weight -> Typeface.BOLD
                     else -> Typeface.NORMAL
                 }
