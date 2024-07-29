@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.hilt.android) apply false
+    alias(libs.plugins.parcelize) apply false
 }
 
 buildscript {

@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    id("dagger.hilt.android.plugin")
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -35,8 +35,11 @@ dependencies {
     implementation(project(":domain"))
 
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.retrofit.converter)
     implementation(libs.retrofit.interceptor)
+
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
 }
