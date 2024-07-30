@@ -32,6 +32,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -72,6 +73,7 @@ import com.mj.core.theme.Sky
 import com.mj.core.theme.Typography
 import com.mj.core.theme.White
 import com.mj.feature.home.R
+import com.mj.presentation.home.model.NewsInfo
 import com.mj.presentation.home.model.NewsInfo.Content
 import com.mj.presentation.home.model.Pages
 import kotlinx.coroutines.flow.Flow
@@ -453,5 +455,23 @@ private fun HomeScreenPreview() {
             onEventSent = {},
             onNavigationRequested = {},
         )
+    }
+}
+
+@Composable
+@Preview
+private fun NewsRowPreview() {
+    ComposeCleanArchitectureTheme {
+        Column {
+            NewsRow(
+                newsInfo = Content(
+                    title = "제목입니다.",
+                    description = "디스크립션입니다.",
+                    date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat(),
+                    link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
+                ),
+                onItemClick = {},
+            )
+        }
     }
 }

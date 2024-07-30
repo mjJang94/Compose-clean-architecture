@@ -6,6 +6,7 @@ import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface NaverApi {
+
     @GET(Endpoints.GET_NEWS)
     suspend fun getNews(
         @Header("X-Naver-Client-Id") id: String = Endpoints.NAVER_CLIENT_ID,

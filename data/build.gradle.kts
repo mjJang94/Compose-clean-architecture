@@ -41,5 +41,6 @@ dependencies {
     implementation(libs.retrofit.interceptor)
 
     implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
     ksp(libs.room.compiler)
 }
