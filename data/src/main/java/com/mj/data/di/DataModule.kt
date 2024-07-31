@@ -54,15 +54,16 @@ object DataModule {
     fun provideRemoteDataSource(
         naverRemote: NaverApi,
         newDao: NewsDao,
-    ): RemoteDataSource =
-
-        RemoteDataSourceImpl(
+    ): RemoteDataSource = RemoteDataSourceImpl(
             naverRemote = naverRemote,
             newsDao = newDao,
         )
 
     @Provides
     @Singleton
-    fun provideRepository(remoteDataSource: RemoteDataSource): Repository =
-        RepositoryImpl(remoteDataSource)
+    fun provideRepository(
+        remoteDataSource: RemoteDataSource,
+        newsDao: NewsDao,
+    ): Repository =
+        RepositoryImpl(remoteDataSource, newsDao)
 }

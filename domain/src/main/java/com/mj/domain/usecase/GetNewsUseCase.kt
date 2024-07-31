@@ -2,13 +2,12 @@ package com.mj.domain.usecase
 
 import com.mj.domain.Repository
 import com.mj.domain.model.News
-import kotlinx.coroutines.CoroutineDispatcher
+import com.mj.domain.usecase.base.ConsumerUseCase
 import javax.inject.Inject
-import kotlin.coroutines.coroutineContext
 
 class GetNewsUseCase @Inject constructor(
     private val repository: Repository,
-) : BaseUseCase<GetNewsUseCase.GetNewsParam, News>() {
+) : ConsumerUseCase<GetNewsUseCase.GetNewsParam, News>() {
 
     override suspend fun execute(param: GetNewsParam): News =
         repository.getNews(param.query, param.start)
