@@ -5,12 +5,12 @@ import com.mj.domain.model.News
 import com.mj.domain.usecase.base.ActionUseCase
 import javax.inject.Inject
 
-class RemoveScrapNewsUseCase @Inject constructor(
+class DeleteScrapNewsUseCase @Inject constructor(
     private val repository: Repository,
 ) : ActionUseCase<News.Content>() {
 
     override suspend fun execute(param: News.Content) {
-        repository.deleteScrapNews(param.uid)
+        repository.deleteScrapNews(param)
     }
 
 }

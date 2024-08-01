@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface Repository {
     suspend fun getNews(query: String, currentPage: Int): News
-    suspend fun getScrapNews(): Flow<News.Content>
-    suspend fun deleteScrapNews(news: News.Content)
+    fun getScrapNews(): Flow<List<News.Content>>
+    suspend fun deleteScrapNews(uid: Long)
     suspend fun addScrapNews(news: News.Content)
 }

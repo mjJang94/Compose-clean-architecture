@@ -5,6 +5,7 @@ data class News(
     val contents: List<Content>,
 ){
     data class Content(
+        val uid: Long = 0,
         val title: String,
         val description: String,
         val date: String,

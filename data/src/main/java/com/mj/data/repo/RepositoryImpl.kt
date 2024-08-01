@@ -17,13 +17,11 @@ class RepositoryImpl @Inject constructor(
     override suspend fun getNews(query: String, currentPage: Int): News =
         remoteDataSource.getNewsData(query = query, page = currentPage).translate()
 
-    override suspend fun getScrapNews(): Flow<News.Content> {
-        TODO("Not yet implemented")
-    }
+    override fun getScrapNews(): Flow<List<News.Content>> =
+        newsDao.flow().map { it.translate() }
 
-
-    override suspend fun deleteScrapNews(news: News.Content) {
-        TODO("Not yet implemented")
+    override suspend fun deleteScrapNews(uid: Long) {
+        newsDao.deleteById(uid)
     }
 
     override suspend fun addScrapNews(news: News.Content) {

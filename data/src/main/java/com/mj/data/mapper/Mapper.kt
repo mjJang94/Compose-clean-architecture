@@ -18,6 +18,7 @@ fun NewsDto.translate(): News = News(
 
 fun List<NewsEntity>.translate(): List<News.Content> = this.map {
     News.Content(
+        uid = it.uid,
         title = it.title,
         description = it.description,
         date = it.date,
