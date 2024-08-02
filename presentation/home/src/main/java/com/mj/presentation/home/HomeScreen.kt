@@ -7,6 +7,7 @@ import android.text.TextUtils
 import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +20,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
@@ -32,7 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -41,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -50,6 +53,7 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +77,6 @@ import com.mj.core.theme.Sky
 import com.mj.core.theme.Typography
 import com.mj.core.theme.White
 import com.mj.feature.home.R
-import com.mj.presentation.home.model.NewsInfo
 import com.mj.presentation.home.model.NewsInfo.Content
 import com.mj.presentation.home.model.Pages
 import kotlinx.coroutines.flow.Flow
@@ -97,7 +100,7 @@ fun HomeScreen(
         pageCount = { Pages.entries.size }
     )
 
-    val newsPagingItem = state.newsPagingInfo.collectAsLazyPagingItems()
+    val newsPagingItem = state.searchNewsPagingInfo.collectAsLazyPagingItems()
 
     var query by rememberSaveable { mutableStateOf("") }
     val dataLoadedMsg = stringResource(R.string.home_screen_loaded_message)
@@ -125,6 +128,7 @@ fun HomeScreen(
                     onQueryChanged = { query = it },
                     onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) },
                     onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) },
+                    onScrapClick = { isAdd, content -> onEventSent(HomeContract.Event.NewsScrap(isAdd, content)) },
                     onPageChanged = { index ->
                         coroutineScope.launch {
                             pagerState.scrollToPage(index)
@@ -145,6 +149,7 @@ private fun HomeContent(
     onQueryChanged: (String) -> Unit,
     onSearchClick: () -> Unit,
     onItemClick: (String) -> Unit,
+    onScrapClick: (Boolean, Content) -> Unit,
     onPageChanged: (Int) -> Unit,
 ) {
     SearchBox(
@@ -171,9 +176,10 @@ private fun HomeContent(
     ) { index ->
         when (Pages.entries[index]) {
             Pages.SEARCH -> {
-                NewsList(
+                SearchPage(
                     newsPagingItem = pagingItems,
                     onItemClick = onItemClick,
+                    onScrapClick = onScrapClick,
                 )
             }
 
@@ -234,9 +240,10 @@ private fun SearchBox(
 }
 
 @Composable
-private fun NewsList(
+private fun SearchPage(
     newsPagingItem: LazyPagingItems<Content>,
     onItemClick: (String) -> Unit,
+    onScrapClick: (Boolean, Content) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -257,6 +264,7 @@ private fun NewsList(
                     NewsRow(
                         newsInfo = news,
                         onItemClick = onItemClick,
+                        onScrapClick = onScrapClick,
                     )
                 }
 
@@ -290,34 +298,53 @@ private fun NewsList(
 private fun NewsRow(
     newsInfo: Content,
     onItemClick: (String) -> Unit,
+    onScrapClick: (Boolean, Content) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clickable { onItemClick(newsInfo.link) }
-    ) {
-        HtmlText(
-            htmlText = newsInfo.title,
-            textStyle = Typography.titleLarge,
-            maxLine = 2,
+    val isAdd = remember { newsInfo.uid < 1 }
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            modifier = Modifier.clickable {
+                onScrapClick.invoke(isAdd, newsInfo)
+            },
+            painter = when (isAdd) {
+                true -> painterResource(id = R.drawable.baseline_bookmark_border_24)
+                else -> painterResource(id = R.drawable.baseline_bookmark_remove_24)
+            },
+            contentDescription = null
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
-        HtmlText(
-            htmlText = newsInfo.description,
-            textStyle = Typography.bodyMedium,
-            maxLine = 10,
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .wrapContentHeight()
+                .clickable { onItemClick(newsInfo.link) }
+        ) {
+            HtmlText(
+                htmlText = newsInfo.title,
+                textStyle = Typography.titleLarge,
+                maxLine = 2,
+            )
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = newsInfo.date.applyDateFormat(),
-            style = Typography.bodySmall,
-            maxLines = 1,
-        )
+            HtmlText(
+                htmlText = newsInfo.description,
+                textStyle = Typography.bodyMedium,
+                maxLine = 10,
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = newsInfo.date.applyDateFormat(),
+                style = Typography.bodySmall,
+                maxLines = 1,
+            )
+        }
     }
 }
 
@@ -447,7 +474,7 @@ private fun HomeScreenPreview() {
                 .fillMaxSize()
                 .background(Color.White),
             state = HomeContract.State(
-                newsPagingInfo = MutableStateFlow(PagingData.empty()),
+                searchNewsPagingInfo = MutableStateFlow(PagingData.empty()),
                 isLoading = false,
                 isError = false,
             ),
@@ -462,15 +489,21 @@ private fun HomeScreenPreview() {
 @Preview
 private fun NewsRowPreview() {
     ComposeCleanArchitectureTheme {
-        Column {
+        Column(
+            modifier = Modifier
+                .wrapContentSize()
+                .background(Color.White)
+        ) {
             NewsRow(
                 newsInfo = Content(
+                    uid = 0,
                     title = "제목입니다.",
                     description = "디스크립션입니다.",
-                    date = "Mon, 26 Sep 2016 07:50:00 +0900".applyDateFormat(),
+                    date = "Fri, 02 Aug 2024 17:12:00 +0900",
                     link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
                 ),
                 onItemClick = {},
+                onScrapClick = { a,b  ->},
             )
         }
     }

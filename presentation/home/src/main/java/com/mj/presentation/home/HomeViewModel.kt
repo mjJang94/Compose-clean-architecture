@@ -10,7 +10,10 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import com.mj.core.base.BaseViewModel
 import com.mj.domain.model.News
+import com.mj.domain.usecase.AddScrapNewsUseCase
+import com.mj.domain.usecase.DeleteScrapNewsUseCase
 import com.mj.domain.usecase.GetNewsUseCase
+import com.mj.domain.usecase.GetScrapNewsUseCase
 import com.mj.domain.usecase.GetNewsUseCase.GetNewsParam as Param
 import com.mj.presentation.home.model.NewsInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,13 +25,21 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getNewsUseCase: GetNewsUseCase
+    private val getNewsUseCase: GetNewsUseCase,
+    private val getScrapNewsUseCase: GetScrapNewsUseCase,
+    private val addScrapNewsUseCase: AddScrapNewsUseCase,
+    private val deleteScrapNewsUseCase: DeleteScrapNewsUseCase,
 ) : BaseViewModel<HomeContract.Event, HomeContract.State, HomeContract.Effect>() {
 
+    companion object {
+        private const val MAX_PAGE_SIZE = 20
+        private const val PREFETCH_DISTANCE = 10
+    }
     private val _newsState: MutableStateFlow<PagingData<NewsInfo.Content>> = MutableStateFlow(PagingData.empty())
 
     override fun setInitialState() = HomeContract.State(
-        newsPagingInfo = MutableStateFlow(PagingData.empty()),
+        searchNewsPagingInfo = MutableStateFlow(PagingData.empty()),
+        scrapNewsPagingInfo = MutableStateFlow(PagingData.empty()),
         isLoading = false,
         isError = false,
     )
@@ -37,19 +48,39 @@ class HomeViewModel @Inject constructor(
         Log.d("HomeViewModel", "event = $event")
         when (event) {
             is HomeContract.Event.NewsSelection -> setEffect { HomeContract.Effect.Navigation.ToDetail(event.url) }
-            is HomeContract.Event.SearchClick -> getNews(event.query)
-            is HomeContract.Event.Retry -> getNews(event.query)
+            is HomeContract.Event.NewsScrap -> when (event.isAdd) {
+                true -> addScrap(event.content)
+                else -> deleteScrap(event.content)
+            }
+            is HomeContract.Event.SearchClick -> getSearchNews(event.query)
+            is HomeContract.Event.Retry -> getSearchNews(event.query)
         }
     }
 
-    private val maxPageSize: Int = 20
-    private val prefetchDistance: Int = 10
-    private fun getNews(query: String) {
+    private fun addScrap(content: NewsInfo.Content) {
+        viewModelScope.launch {
+            addScrapNewsUseCase(
+                dispatcher = Dispatchers.IO,
+                param = content.translate(),
+            )
+        }
+    }
+
+    private fun deleteScrap(content: NewsInfo.Content) {
+        viewModelScope.launch {
+            deleteScrapNewsUseCase(
+                dispatcher = Dispatchers.IO,
+                param = content.translate(),
+            )
+        }
+    }
+
+    private fun getSearchNews(query: String) {
         viewModelScope.launch {
             Pager(
-                config = PagingConfig(pageSize = maxPageSize, prefetchDistance),
+                config = PagingConfig(pageSize = MAX_PAGE_SIZE, prefetchDistance = PREFETCH_DISTANCE),
                 pagingSourceFactory = {
-                    NewsPagingSource(
+                    SearchNewsPagingSource(
                         load = { query, index ->
                             getNewsUseCase(
                                 dispatcher = Dispatchers.IO,
@@ -64,13 +95,13 @@ class HomeViewModel @Inject constructor(
                 .cachedIn(viewModelScope)
                 .collect {
                     _newsState.emit(it)
-                    setState { copy(newsPagingInfo = _newsState, isLoading = false) }
+                    setState { copy(searchNewsPagingInfo = _newsState, isLoading = false) }
                     setEffect { HomeContract.Effect.DataLoaded }
                 }
         }
     }
 
-    private inner class NewsPagingSource(
+    private inner class SearchNewsPagingSource(
         private val load: suspend (query: String, index: Int) -> News,
         private val query: String,
     ) : PagingSource<Int, NewsInfo.Content>() {
@@ -99,6 +130,7 @@ class HomeViewModel @Inject constructor(
                 currentPage = this.currentPage,
                 contents = this.contents.map { content ->
                     NewsInfo.Content(
+                        uid = content.uid,
                         title = content.title,
                         description = content.description,
                         date = content.date,
@@ -107,6 +139,75 @@ class HomeViewModel @Inject constructor(
                 }
             )
     }
+
+//    private fun getScrapNews(query: String) {
+//        viewModelScope.launch {
+//            Pager(
+//                config = PagingConfig(pageSize = MAX_PAGE_SIZE, prefetchDistance = PREFETCH_DISTANCE),
+//                pagingSourceFactory = {
+//                    NewsPagingSource(
+//                        load = { query, index ->
+//                            getScrapNewsUseCase.invoke()
+//                        },
+//                        query = query,
+//                    )
+//                }
+//            ).flow
+//                .distinctUntilChanged()
+//                .cachedIn(viewModelScope)
+//                .collect {
+//                    _newsState.emit(it)
+//                    setState { copy(searchNewsPagingInfo = _newsState, isLoading = false) }
+//                    setEffect { HomeContract.Effect.DataLoaded }
+//                }
+//        }
+//    }
+//
+//    private inner class NewsPagingSource(
+//        private val load: suspend (query: String, index: Int) -> News,
+//    ) : PagingSource<Int, NewsInfo.Content>() {
+//
+//        override suspend fun load(params: LoadParams<Int>): LoadResult<Int, NewsInfo.Content> {
+//            return try {
+//                val currentPage = params.key ?: 1
+//                val news = load.invoke(query, currentPage).translate()
+//
+//                LoadResult.Page(
+//                    data = news.contents,
+//                    prevKey = if (currentPage == 1) null else currentPage - 1,
+//                    nextKey = news.currentPage + 1
+//                )
+//            } catch (exception: Exception) {
+//                return LoadResult.Error(exception)
+//            }
+//        }
+//
+//        override fun getRefreshKey(state: PagingState<Int, NewsInfo.Content>): Int? {
+//            return state.anchorPosition
+//        }
+//
+//        private fun News.translate(): NewsInfo =
+//            NewsInfo(
+//                currentPage = this.currentPage,
+//                contents = this.contents.map { content ->
+//                    NewsInfo.Content(
+//                        uid = content.uid,
+//                        title = content.title,
+//                        description = content.description,
+//                        date = content.date,
+//                        link = content.link,
+//                    )
+//                }
+//            )
+//    }
+
+    private fun NewsInfo.Content.translate() = News.Content(
+        uid = uid,
+        title = title,
+        description = description,
+        date = date,
+        link = link,
+    )
 }
 
 

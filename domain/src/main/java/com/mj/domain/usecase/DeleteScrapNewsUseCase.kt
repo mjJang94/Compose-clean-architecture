@@ -10,7 +10,7 @@ class DeleteScrapNewsUseCase @Inject constructor(
 ) : ActionUseCase<News.Content>() {
 
     override suspend fun execute(param: News.Content) {
-        repository.deleteScrapNews(param)
+        repository.deleteScrapNews(param.uid)
     }
 
 }

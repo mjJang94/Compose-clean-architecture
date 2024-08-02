@@ -13,10 +13,12 @@ class HomeContract {
         data class Retry(val query: String): Event()
         data class SearchClick(val query: String): Event()
         data class NewsSelection(val url: String): Event()
+        data class NewsScrap(val isAdd: Boolean, val content: NewsInfo.Content): Event()
     }
 
     data class State(
-        val newsPagingInfo: StateFlow<PagingData<NewsInfo.Content>>,
+        val searchNewsPagingInfo: StateFlow<PagingData<NewsInfo.Content>>,
+        val scrapNewsPagingInfo: StateFlow<PagingData<NewsInfo.Content>>,
         val isLoading: Boolean,
         val isError: Boolean,
     ): ViewState

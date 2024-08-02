@@ -12,5 +12,4 @@ class GetScrapNewsUseCase @Inject constructor(
 
     override fun execute(param: Unit): Flow<List<News.Content>> =
         repository.getScrapNews()
-
 }
