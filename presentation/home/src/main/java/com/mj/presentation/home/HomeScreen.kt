@@ -7,7 +7,6 @@ import android.text.TextUtils
 import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -28,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -38,12 +37,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -53,7 +53,6 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -101,6 +100,7 @@ fun HomeScreen(
     )
 
     val newsPagingItem = state.searchNewsPagingInfo.collectAsLazyPagingItems()
+    val scrapItem by state.scrapNewsInfo.collectAsState()
 
     var query by rememberSaveable { mutableStateOf("") }
     val dataLoadedMsg = stringResource(R.string.home_screen_loaded_message)
@@ -118,24 +118,22 @@ fun HomeScreen(
         when {
             state.isLoading -> Progress()
             state.isError -> NetworkError { onEventSent(HomeContract.Event.Retry(query)) }
-            else -> {
-
-                HomeContent(
-                    focusManager = focusManager,
-                    pagerState = pagerState,
-                    query = query,
-                    pagingItems = newsPagingItem,
-                    onQueryChanged = { query = it },
-                    onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) },
-                    onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) },
-                    onScrapClick = { isAdd, content -> onEventSent(HomeContract.Event.NewsScrap(isAdd, content)) },
-                    onPageChanged = { index ->
-                        coroutineScope.launch {
-                            pagerState.scrollToPage(index)
-                        }
-                    },
-                )
-            }
+            else -> HomeContent(
+                focusManager = focusManager,
+                pagerState = pagerState,
+                query = query,
+                pagingItems = newsPagingItem,
+                scrapItem = scrapItem,
+                onQueryChanged = { query = it },
+                onSearchClick = { onEventSent(HomeContract.Event.SearchClick(query)) },
+                onItemClick = { onEventSent(HomeContract.Event.NewsSelection(it)) },
+                onScrapClick = { isAdd, content -> onEventSent(HomeContract.Event.NewsScrap(isAdd, content)) },
+                onPageChanged = { index ->
+                    coroutineScope.launch {
+                        pagerState.scrollToPage(index)
+                    }
+                },
+            )
         }
     }
 }
@@ -146,18 +144,13 @@ private fun HomeContent(
     pagerState: PagerState,
     query: String,
     pagingItems: LazyPagingItems<Content>,
+    scrapItem: List<Content>,
     onQueryChanged: (String) -> Unit,
     onSearchClick: () -> Unit,
     onItemClick: (String) -> Unit,
     onScrapClick: (Boolean, Content) -> Unit,
     onPageChanged: (Int) -> Unit,
 ) {
-    SearchBox(
-        fm = focusManager,
-        query = query,
-        onQueryChange = onQueryChanged,
-        onSearchClick = onSearchClick,
-    )
 
     TabRow(selectedTabIndex = pagerState.currentPage) {
         Pages.entries.forEachIndexed { index, title ->
@@ -177,14 +170,22 @@ private fun HomeContent(
         when (Pages.entries[index]) {
             Pages.SEARCH -> {
                 SearchPage(
+                    focusManager = focusManager,
+                    query = query,
                     newsPagingItem = pagingItems,
+                    onQueryChanged = onQueryChanged,
+                    onSearchClick = onSearchClick,
                     onItemClick = onItemClick,
                     onScrapClick = onScrapClick,
                 )
             }
 
             Pages.SCRAP -> {
-                Text(text = "Scrap")
+                ScrapPage(
+                    scrapItem = scrapItem,
+                    onItemClick = onItemClick,
+                    onScrapClick = onScrapClick,
+                )
             }
         }
     }
@@ -241,51 +242,70 @@ private fun SearchBox(
 
 @Composable
 private fun SearchPage(
+    focusManager: FocusManager,
+    query: String,
     newsPagingItem: LazyPagingItems<Content>,
+    onQueryChanged: (String) -> Unit,
+    onSearchClick: () -> Unit,
     onItemClick: (String) -> Unit,
     onScrapClick: (Boolean, Content) -> Unit,
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        if (newsPagingItem.itemCount < 1) {
-            Text(
-                text = stringResource(id = R.string.home_screen_loaded_result_empty)
-            )
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(all = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                items(newsPagingItem.itemCount) { index ->
-                    val news = newsPagingItem[index] ?: return@items
-                    NewsRow(
-                        newsInfo = news,
-                        onItemClick = onItemClick,
-                        onScrapClick = onScrapClick,
-                    )
-                }
+    Column(modifier = Modifier.fillMaxSize()) {
 
-                newsPagingItem.apply {
-                    when {
-                        loadState.refresh is LoadState.Loading -> {
-                            item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
-                        }
+        SearchBox(
+            fm = focusManager,
+            query = query,
+            onQueryChange = onQueryChanged,
+            onSearchClick = onSearchClick,
+        )
 
-                        loadState.refresh is LoadState.Error -> {
-                            val error = newsPagingItem.loadState.refresh as LoadState.Error
-                            item {
-                                ErrorMessage(
-                                    modifier = Modifier.fillParentMaxSize(),
-                                    message = error.error.localizedMessage!!,
-                                    onClickRetry = { retry() })
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+
+            if (newsPagingItem.itemCount < 1) {
+                Text(
+                    text = stringResource(id = R.string.home_screen_loaded_result_empty)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(all = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(newsPagingItem.itemCount) { index ->
+                        val news = newsPagingItem[index] ?: return@items
+                        NewsRow(
+                            isAdd = true,
+                            newsInfo = news,
+                            onItemClick = onItemClick,
+                            onScrapClick = onScrapClick,
+                        )
+                    }
+
+                    newsPagingItem.apply {
+                        when {
+                            loadState.refresh is LoadState.Loading -> {
+                                item { PageLoader(modifier = Modifier.fillParentMaxSize()) }
                             }
-                        }
 
-                        loadState.append is LoadState.Loading -> {
-                            item { LoadingNextPageItem(modifier = Modifier) }
+                            loadState.refresh is LoadState.Error -> {
+                                val error = newsPagingItem.loadState.refresh as LoadState.Error
+                                item {
+                                    ErrorMessage(
+                                        modifier = Modifier.fillParentMaxSize(),
+                                        message = error.error.localizedMessage!!,
+                                        onClickRetry = { retry() })
+                                }
+                            }
+
+                            loadState.append is LoadState.Loading -> {
+                                item { LoadingNextPageItem(modifier = Modifier) }
+                            }
                         }
                     }
                 }
@@ -295,27 +315,72 @@ private fun SearchPage(
 }
 
 @Composable
+private fun ScrapPage(
+    scrapItem: List<Content>,
+    onItemClick: (String) -> Unit,
+    onScrapClick: (Boolean, Content) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+
+            if (scrapItem.isEmpty()) {
+                Text(
+                    text = stringResource(id = R.string.home_screen_scrap_result_empty)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(all = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    items(scrapItem.size) { index ->
+                        val news = scrapItem[index]
+                        NewsRow(
+                            isAdd = false,
+                            newsInfo = news,
+                            onItemClick = onItemClick,
+                            onScrapClick = onScrapClick,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun NewsRow(
+    isAdd: Boolean,
     newsInfo: Content,
     onItemClick: (String) -> Unit,
     onScrapClick: (Boolean, Content) -> Unit,
 ) {
-    val isAdd = remember { newsInfo.uid < 1 }
-
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Image(
-            modifier = Modifier.clickable {
-                onScrapClick.invoke(isAdd, newsInfo)
-            },
-            painter = when (isAdd) {
-                true -> painterResource(id = R.drawable.baseline_bookmark_border_24)
-                else -> painterResource(id = R.drawable.baseline_bookmark_remove_24)
-            },
-            contentDescription = null
-        )
-
-        Spacer(modifier = Modifier.width(10.dp))
-
+        TextButton(onClick = { onScrapClick(isAdd, newsInfo) }) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = Color.Yellow,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = when (isAdd) {
+                        true -> stringResource(id = R.string.scrap)
+                        else -> stringResource(id = R.string.delete)
+                    },
+                    style = Typography.bodySmall,
+                    color = Color.Black,
+                )
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -475,6 +540,7 @@ private fun HomeScreenPreview() {
                 .background(Color.White),
             state = HomeContract.State(
                 searchNewsPagingInfo = MutableStateFlow(PagingData.empty()),
+                scrapNewsInfo = MutableStateFlow(emptyList()),
                 isLoading = false,
                 isError = false,
             ),
@@ -495,6 +561,7 @@ private fun NewsRowPreview() {
                 .background(Color.White)
         ) {
             NewsRow(
+                isAdd = true,
                 newsInfo = Content(
                     uid = 0,
                     title = "제목입니다.",
@@ -503,7 +570,7 @@ private fun NewsRowPreview() {
                     link = "http://app.yonhapnews.co.kr/YNA/Basic/SNS/r.aspx?c=AKR20160926019000008&did=1195m",
                 ),
                 onItemClick = {},
-                onScrapClick = { a,b  ->},
+                onScrapClick = { a, b -> },
             )
         }
     }

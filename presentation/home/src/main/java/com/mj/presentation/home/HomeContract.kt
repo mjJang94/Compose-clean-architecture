@@ -18,7 +18,7 @@ class HomeContract {
 
     data class State(
         val searchNewsPagingInfo: StateFlow<PagingData<NewsInfo.Content>>,
-        val scrapNewsPagingInfo: StateFlow<PagingData<NewsInfo.Content>>,
+        val scrapNewsInfo: StateFlow<List<NewsInfo.Content>>,
         val isLoading: Boolean,
         val isError: Boolean,
     ): ViewState

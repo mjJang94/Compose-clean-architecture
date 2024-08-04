@@ -8,8 +8,8 @@ import javax.inject.Inject
 
 class GetScrapNewsUseCase @Inject constructor(
     private val repository: Repository,
-) : FlowUseCase<Unit, List<News.Content>>() {
+) : FlowUseCase<List<News.Content>>() {
 
-    override fun execute(param: Unit): Flow<List<News.Content>> =
+    override fun execute(): Flow<List<News.Content>> =
         repository.getScrapNews()
 }

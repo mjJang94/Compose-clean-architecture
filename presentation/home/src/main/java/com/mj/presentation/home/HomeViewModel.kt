@@ -14,7 +14,6 @@ import com.mj.domain.usecase.AddScrapNewsUseCase
 import com.mj.domain.usecase.DeleteScrapNewsUseCase
 import com.mj.domain.usecase.GetNewsUseCase
 import com.mj.domain.usecase.GetScrapNewsUseCase
-import com.mj.domain.usecase.GetNewsUseCase.GetNewsParam as Param
 import com.mj.presentation.home.model.NewsInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.mj.domain.usecase.GetNewsUseCase.GetNewsParam as Param
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -35,14 +35,20 @@ class HomeViewModel @Inject constructor(
         private const val MAX_PAGE_SIZE = 20
         private const val PREFETCH_DISTANCE = 10
     }
-    private val _newsState: MutableStateFlow<PagingData<NewsInfo.Content>> = MutableStateFlow(PagingData.empty())
+
+    private val _searchNewsState: MutableStateFlow<PagingData<NewsInfo.Content>> = MutableStateFlow(PagingData.empty())
+    private val _scrapNewsState: MutableStateFlow<List<NewsInfo.Content>> = MutableStateFlow(emptyList())
 
     override fun setInitialState() = HomeContract.State(
         searchNewsPagingInfo = MutableStateFlow(PagingData.empty()),
-        scrapNewsPagingInfo = MutableStateFlow(PagingData.empty()),
+        scrapNewsInfo = MutableStateFlow(emptyList()),
         isLoading = false,
         isError = false,
     )
+
+    init {
+        getScrapNews()
+    }
 
     override fun handleEvents(event: HomeContract.Event) {
         Log.d("HomeViewModel", "event = $event")
@@ -94,8 +100,8 @@ class HomeViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .cachedIn(viewModelScope)
                 .collect {
-                    _newsState.emit(it)
-                    setState { copy(searchNewsPagingInfo = _newsState, isLoading = false) }
+                    _searchNewsState.emit(it)
+                    setState { copy(searchNewsPagingInfo = _searchNewsState, isLoading = false) }
                     setEffect { HomeContract.Effect.DataLoaded }
                 }
         }
@@ -124,82 +130,42 @@ class HomeViewModel @Inject constructor(
         override fun getRefreshKey(state: PagingState<Int, NewsInfo.Content>): Int? {
             return state.anchorPosition
         }
-
-        private fun News.translate(): NewsInfo =
-            NewsInfo(
-                currentPage = this.currentPage,
-                contents = this.contents.map { content ->
-                    NewsInfo.Content(
-                        uid = content.uid,
-                        title = content.title,
-                        description = content.description,
-                        date = content.date,
-                        link = content.link,
-                    )
-                }
-            )
     }
 
-//    private fun getScrapNews(query: String) {
-//        viewModelScope.launch {
-//            Pager(
-//                config = PagingConfig(pageSize = MAX_PAGE_SIZE, prefetchDistance = PREFETCH_DISTANCE),
-//                pagingSourceFactory = {
-//                    NewsPagingSource(
-//                        load = { query, index ->
-//                            getScrapNewsUseCase.invoke()
-//                        },
-//                        query = query,
-//                    )
-//                }
-//            ).flow
-//                .distinctUntilChanged()
-//                .cachedIn(viewModelScope)
-//                .collect {
-//                    _newsState.emit(it)
-//                    setState { copy(searchNewsPagingInfo = _newsState, isLoading = false) }
-//                    setEffect { HomeContract.Effect.DataLoaded }
-//                }
-//        }
-//    }
-//
-//    private inner class NewsPagingSource(
-//        private val load: suspend (query: String, index: Int) -> News,
-//    ) : PagingSource<Int, NewsInfo.Content>() {
-//
-//        override suspend fun load(params: LoadParams<Int>): LoadResult<Int, NewsInfo.Content> {
-//            return try {
-//                val currentPage = params.key ?: 1
-//                val news = load.invoke(query, currentPage).translate()
-//
-//                LoadResult.Page(
-//                    data = news.contents,
-//                    prevKey = if (currentPage == 1) null else currentPage - 1,
-//                    nextKey = news.currentPage + 1
-//                )
-//            } catch (exception: Exception) {
-//                return LoadResult.Error(exception)
-//            }
-//        }
-//
-//        override fun getRefreshKey(state: PagingState<Int, NewsInfo.Content>): Int? {
-//            return state.anchorPosition
-//        }
-//
-//        private fun News.translate(): NewsInfo =
-//            NewsInfo(
-//                currentPage = this.currentPage,
-//                contents = this.contents.map { content ->
-//                    NewsInfo.Content(
-//                        uid = content.uid,
-//                        title = content.title,
-//                        description = content.description,
-//                        date = content.date,
-//                        link = content.link,
-//                    )
-//                }
-//            )
-//    }
+    private fun getScrapNews() {
+        viewModelScope.launch {
+            getScrapNewsUseCase()
+                .distinctUntilChanged()
+                .collect {
+                    _scrapNewsState.emit(it.translate())
+                    setState { copy(scrapNewsInfo = _scrapNewsState) }
+                }
+        }
+    }
+
+    private fun List<News.Content>.translate() = this.map {
+        NewsInfo.Content(
+            uid = it.uid,
+            title = it.title,
+            description = it.description,
+            date = it.date,
+            link = it.link,
+        )
+    }
+
+    private fun News.translate(): NewsInfo =
+        NewsInfo(
+            currentPage = this.currentPage,
+            contents = this.contents.map { content ->
+                NewsInfo.Content(
+                    uid = content.uid,
+                    title = content.title,
+                    description = content.description,
+                    date = content.date,
+                    link = content.link,
+                )
+            }
+        )
 
     private fun NewsInfo.Content.translate() = News.Content(
         uid = uid,
