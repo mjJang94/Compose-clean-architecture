@@ -25,6 +25,7 @@ class HomeContract {
 
     sealed class Effect: ViewSideEffect {
         data object DataLoaded: Effect()
+        data object AlreadyScrap: Effect()
 
         sealed class Navigation: Effect() {
             data class ToDetail(val url: String): Navigation()

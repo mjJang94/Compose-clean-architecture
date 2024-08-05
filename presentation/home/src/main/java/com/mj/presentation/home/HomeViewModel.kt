@@ -13,6 +13,7 @@ import com.mj.domain.model.News
 import com.mj.domain.usecase.AddScrapNewsUseCase
 import com.mj.domain.usecase.DeleteScrapNewsUseCase
 import com.mj.domain.usecase.GetNewsUseCase
+import com.mj.domain.usecase.GetScrapNewsByDataUseCase
 import com.mj.domain.usecase.GetScrapNewsUseCase
 import com.mj.presentation.home.model.NewsInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.mj.domain.usecase.GetNewsUseCase.GetNewsParam as Param
+import com.mj.domain.usecase.GetScrapNewsByDataUseCase.GetScrapNewsParam as SavedParam
+import com.mj.domain.usecase.GetNewsUseCase.GetNewsParam as SearchParam
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -29,6 +31,7 @@ class HomeViewModel @Inject constructor(
     private val getScrapNewsUseCase: GetScrapNewsUseCase,
     private val addScrapNewsUseCase: AddScrapNewsUseCase,
     private val deleteScrapNewsUseCase: DeleteScrapNewsUseCase,
+    private val getScrapNewsByDataUseCase: GetScrapNewsByDataUseCase,
 ) : BaseViewModel<HomeContract.Event, HomeContract.State, HomeContract.Effect>() {
 
     companion object {
@@ -58,6 +61,7 @@ class HomeViewModel @Inject constructor(
                 true -> addScrap(event.content)
                 else -> deleteScrap(event.content)
             }
+
             is HomeContract.Event.SearchClick -> getSearchNews(event.query)
             is HomeContract.Event.Retry -> getSearchNews(event.query)
         }
@@ -65,10 +69,18 @@ class HomeViewModel @Inject constructor(
 
     private fun addScrap(content: NewsInfo.Content) {
         viewModelScope.launch {
-            addScrapNewsUseCase(
+            val saved = getScrapNewsByDataUseCase(
                 dispatcher = Dispatchers.IO,
-                param = content.translate(),
+                param = SavedParam(content.title, content.link)
             )
+
+            when (saved == null) {
+                true -> addScrapNewsUseCase(
+                    dispatcher = Dispatchers.IO,
+                    param = content.translate(),
+                )
+                else -> setEffect { HomeContract.Effect.AlreadyScrap }
+            }
         }
     }
 
@@ -90,7 +102,7 @@ class HomeViewModel @Inject constructor(
                         load = { query, index ->
                             getNewsUseCase(
                                 dispatcher = Dispatchers.IO,
-                                param = Param(query, index),
+                                param = SearchParam(query, index),
                             )
                         },
                         query = query,

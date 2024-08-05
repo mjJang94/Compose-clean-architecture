@@ -20,6 +20,9 @@ class RepositoryImpl @Inject constructor(
     override fun getScrapNews(): Flow<List<News.Content>> =
         newsDao.flow().map { it.translate() }
 
+    override suspend fun getScrapNewsByData(title: String, date: String): News.Content? =
+        newsDao.getByData(title, date)?.translate()
+
     override suspend fun deleteScrapNews(uid: Long) {
         newsDao.deleteById(uid)
     }

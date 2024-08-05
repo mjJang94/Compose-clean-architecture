@@ -2,6 +2,7 @@
 
 package com.mj.presentation.home
 
+import android.graphics.Color.*
 import android.graphics.Typeface
 import android.text.TextUtils
 import android.widget.TextView
@@ -104,11 +105,13 @@ fun HomeScreen(
 
     var query by rememberSaveable { mutableStateOf("") }
     val dataLoadedMsg = stringResource(R.string.home_screen_loaded_message)
+    val alreadyScrapMsg = stringResource(R.string.home_screen_already_scrap)
 
     LaunchedEffect(SIDE_EFFECTS_KEY) {
         effectFlow?.onEach { effect ->
             when (effect) {
                 is HomeContract.Effect.DataLoaded -> Toast.makeText(context, dataLoadedMsg, Toast.LENGTH_SHORT).show()
+                is HomeContract.Effect.AlreadyScrap -> Toast.makeText(context, alreadyScrapMsg, Toast.LENGTH_SHORT).show()
                 is HomeContract.Effect.Navigation.ToDetail -> onNavigationRequested(effect)
             }
         }?.collect()
@@ -481,7 +484,7 @@ fun HtmlText(
                     else -> Typeface.NORMAL
                 }
                 setTypeface(typeface, style)
-                setTextColor(android.graphics.Color.parseColor("#000000"))
+                setTextColor(parseColor("#000000"))
                 maxLines = maxLine
             }
         },

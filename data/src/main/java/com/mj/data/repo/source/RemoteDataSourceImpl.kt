@@ -20,6 +20,9 @@ class RemoteDataSourceImpl @Inject constructor(
     override fun newsFlow(): Flow<List<NewsEntity>> =
         newsDao.flow()
 
+    override suspend fun getNewsByData(title: String, date: String): NewsEntity? =
+        newsDao.getByData(title, date)
+
     override suspend fun getNewsData(query: String, page: Int, pageSize: Int): NewsDto =
         naverRemote.getNews(q = query, start = page, display = pageSize)
 }

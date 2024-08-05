@@ -26,6 +26,14 @@ fun List<NewsEntity>.translate(): List<News.Content> = this.map {
     )
 }
 
+fun NewsEntity.translate(): News.Content = News.Content(
+    uid = uid,
+    title = title,
+    description = description,
+    date = date,
+    link = link,
+)
+
 fun News.Content.translate(): NewsEntity = NewsEntity(
     title = title,
     description = description,
