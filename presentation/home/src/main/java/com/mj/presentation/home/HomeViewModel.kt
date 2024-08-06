@@ -75,10 +75,18 @@ class HomeViewModel @Inject constructor(
             )
 
             when (saved == null) {
-                true -> addScrapNewsUseCase(
-                    dispatcher = Dispatchers.IO,
-                    param = content.translate(),
-                )
+                true -> {
+                    runCatching {
+                        addScrapNewsUseCase(
+                            dispatcher = Dispatchers.IO,
+                            param = content.translate(),
+                        )
+                    }.onSuccess {
+                        setEffect { HomeContract.Effect.ScrapComplete }
+                    }.onFailure {
+                        setEffect { HomeContract.Effect.ScrapFailure }
+                    }
+                }
                 else -> setEffect { HomeContract.Effect.AlreadyScrap }
             }
         }
@@ -95,6 +103,10 @@ class HomeViewModel @Inject constructor(
 
     private fun getSearchNews(query: String) {
         viewModelScope.launch {
+            if (query.isBlank()) {
+                return@launch setEffect { HomeContract.Effect.EmptyQuery }
+            }
+
             Pager(
                 config = PagingConfig(pageSize = MAX_PAGE_SIZE, prefetchDistance = PREFETCH_DISTANCE),
                 pagingSourceFactory = {

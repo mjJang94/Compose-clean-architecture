@@ -104,14 +104,21 @@ fun HomeScreen(
     val scrapItem by state.scrapNewsInfo.collectAsState()
 
     var query by rememberSaveable { mutableStateOf("") }
+
+    val emptyQueryMsg = stringResource(R.string.empty_query)
     val dataLoadedMsg = stringResource(R.string.home_screen_loaded_message)
     val alreadyScrapMsg = stringResource(R.string.home_screen_already_scrap)
+    val scrapCompleteMsg = stringResource(R.string.scrap_complete)
+    val scrapFailureMsg = stringResource(R.string.scrap_failure)
 
     LaunchedEffect(SIDE_EFFECTS_KEY) {
         effectFlow?.onEach { effect ->
             when (effect) {
+                is HomeContract.Effect.EmptyQuery -> Toast.makeText(context, emptyQueryMsg, Toast.LENGTH_SHORT).show()
                 is HomeContract.Effect.DataLoaded -> Toast.makeText(context, dataLoadedMsg, Toast.LENGTH_SHORT).show()
                 is HomeContract.Effect.AlreadyScrap -> Toast.makeText(context, alreadyScrapMsg, Toast.LENGTH_SHORT).show()
+                is HomeContract.Effect.ScrapComplete -> Toast.makeText(context, scrapCompleteMsg, Toast.LENGTH_SHORT).show()
+                is HomeContract.Effect.ScrapFailure -> Toast.makeText(context, scrapFailureMsg, Toast.LENGTH_SHORT).show()
                 is HomeContract.Effect.Navigation.ToDetail -> onNavigationRequested(effect)
             }
         }?.collect()
