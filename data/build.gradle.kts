@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    implementation(libs.retrofit)
     implementation(libs.retrofit.converter)
     implementation(libs.retrofit.interceptor)
 

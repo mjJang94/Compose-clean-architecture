@@ -1,17 +1,12 @@
 [versions]
 agp = "8.3.2"
-kotlin = "2.0.0"
+kotlin = "2.0.10"
 ksp = "2.0.0-1.0.23"
 
 coreKtx = "1.13.1"
-appcompat = "1.7.0"
-material = "1.12.0"
-activity = "1.9.1"
-fragment = "1.8.2"
 activityCompose = "1.9.1"
 
 androidx-compose-runtime = "1.6.8"
-androidx-compose-runtime-tracing = "1.0.0-beta01"
 androidx-compose-animation = "1.6.8"
 androidx-compose-ui = "1.6.8"
 androidx-compose-foundation = "1.6.8"
@@ -19,7 +14,8 @@ androidx-compose-material = "1.6.8"
 androidx-compose-material3 = "1.2.1"
 androidx-compose-navigation = "2.7.7"
 androidx-compose-lifecycle-viewmodel = "2.8.4"
-androidx-paging = "3.3.1"
+androidx-paging = "3.3.2"
+androidx-lifecycle-runtime = "2.8.4"
 
 
 parcelize = "2.0.0"
@@ -31,21 +27,12 @@ glide = "5.0.0-rc01"
 gson = "2.10.1"
 room = "2.6.1"
 
-junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.4"
-material3Android = "1.2.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidx-lifecycle-runtime" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
-androidx-fragment = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragment" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "androidx-compose-runtime" }
-androidx-compose-runtimeTracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "androidx-compose-runtime-tracing" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "androidx-compose-animation" }
 androidx-compose-animationGraphics = { group = "androidx.compose.animation", name = "animation-graphics", version.ref = "androidx-compose-animation" }
 androidx-compose-animationGraphicsAndroid = { group = "androidx.compose.animation", name = "animation-graphics-android", version.ref = "androidx-compose-animation" }
@@ -64,16 +51,12 @@ androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navig
 
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 room_runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room"}
 room_compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room"}
 room_ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room"}
 
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 hilt = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
@@ -82,11 +65,6 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
-
-junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

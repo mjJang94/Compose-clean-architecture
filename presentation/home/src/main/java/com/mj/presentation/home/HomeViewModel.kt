@@ -2,11 +2,14 @@ package com.mj.presentation.home
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadType
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import androidx.paging.RemoteMediator
 import androidx.paging.cachedIn
 import com.mj.core.base.BaseViewModel
 import com.mj.domain.model.News
@@ -87,6 +90,7 @@ class HomeViewModel @Inject constructor(
                         setEffect { HomeContract.Effect.ScrapFailure }
                     }
                 }
+
                 else -> setEffect { HomeContract.Effect.AlreadyScrap }
             }
         }
