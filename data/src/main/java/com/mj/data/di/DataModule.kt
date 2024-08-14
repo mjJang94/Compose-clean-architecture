@@ -7,8 +7,8 @@ import com.mj.data.repo.local.AppDatabase
 import com.mj.data.repo.local.dao.NewsDao
 import com.mj.data.repo.remote.RemoteApiService
 import com.mj.data.repo.remote.api.NaverApi
-import com.mj.data.repo.source.RemoteDataSource
-import com.mj.data.repo.source.RemoteDataSourceImpl
+import com.mj.data.repo.source.DataSource
+import com.mj.data.repo.source.DataSourceImpl
 import com.mj.domain.Repository
 import dagger.Module
 import dagger.Provides
@@ -54,7 +54,7 @@ object DataModule {
     fun provideRemoteDataSource(
         naverRemote: NaverApi,
         newDao: NewsDao,
-    ): RemoteDataSource = RemoteDataSourceImpl(
+    ): DataSource = DataSourceImpl(
             naverRemote = naverRemote,
             newsDao = newDao,
         )
@@ -62,8 +62,8 @@ object DataModule {
     @Provides
     @Singleton
     fun provideRepository(
-        remoteDataSource: RemoteDataSource,
+        dataSource: DataSource,
         newsDao: NewsDao,
     ): Repository =
-        RepositoryImpl(remoteDataSource, newsDao)
+        RepositoryImpl(dataSource, newsDao)
 }

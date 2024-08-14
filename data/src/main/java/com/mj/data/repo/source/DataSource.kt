@@ -4,7 +4,7 @@ import com.mj.data.repo.local.entity.NewsEntity
 import com.mj.data.repo.remote.data.NewsDto
 import kotlinx.coroutines.flow.Flow
 
-interface RemoteDataSource {
+interface DataSource {
     //local
     suspend fun insertNews(newsEntity: NewsEntity)
     suspend fun deleteNews(uid: Long): Int

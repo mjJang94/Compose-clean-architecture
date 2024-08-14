@@ -7,10 +7,10 @@ import com.mj.data.repo.remote.data.NewsDto
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class RemoteDataSourceImpl @Inject constructor(
+class DataSourceImpl @Inject constructor(
     private val naverRemote: NaverApi,
     private val newsDao: NewsDao,
-) : RemoteDataSource {
+) : DataSource {
     override suspend fun insertNews(newsEntity: NewsEntity) =
         newsDao.insert(newsEntity)
 
