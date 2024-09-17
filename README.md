@@ -13,7 +13,7 @@ Compose Clean Architecture 앱은 Naver 검색 API를 활용하여 검색어와 
 대부분의 라이브러리는 안정된 버전을 사용하며, 특별한 이유가 없는 한 비안정적인 의존성은 사용하지 않습니다.
 * Tech-stack
     * 100% Kotlin
-        * stable 2.0.10 적용 
+        * stable 2.0.20 적용 
         * Coroutines - 백그라운드 작업 수행
         * Kotlin Flow - 전반적인 모든 레이어의 데이터 흐름
         * Retrofit - 네트워킹
