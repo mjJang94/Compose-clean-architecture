@@ -10,7 +10,6 @@ Compose Clean Architecture 앱은 Naver 검색 API를 활용하여 검색어와 
 
 # Tech-Stack
 이 프로젝트는 Android 개발 관행과 많은 인기 있는 라이브러리 및 도구를 활용하고 학습하는것에 목적을 두고 있습니다.   
-대부분의 라이브러리는 안정된 버전을 사용하며, 특별한 이유가 없는 한 비안정적인 의존성은 사용하지 않습니다.
 * Tech-stack
     * 100% Kotlin
         * stable 2.0.20 적용 
