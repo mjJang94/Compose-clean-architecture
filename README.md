@@ -33,8 +33,8 @@ Compose Clean Architecture 앱은 Naver 검색 API를 활용하여 검색어와 
     * 버전 카탈로그 - 의존성 통합 관리
 * CI
   * Github Actions
-    * 빌드 전 Clean
-    * 빌드 작업 수행
+    * Project Clean 수행
+    * Project 빌드 작업 수행
     
 # Project Modules
 * data
